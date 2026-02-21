@@ -1,5 +1,63 @@
-__pycache__/
-*.pkl
+# Frontend
+Smart_wms/Frontend/node_modules/
+Smart_wms/Frontend/dist/
+Smart_wms/Frontend/build/
+Smart_wms/Frontend/.env
+Smart_wms/Frontend/.env.local
+Smart_wms/Frontend/npm-debug.log*
+Smart_wms/Frontend/yarn-error.log*
+
+# Backend
+Smart_wms/Backend/node_modules/
+Smart_wms/Backend/.env
+Smart_wms/Backend/dist/
+Smart_wms/Backend/build/
+Smart_wms/Backend/npm-debug.log*
+
+# AI Engine
+Smart_wms/Ai_engine/__pycache__/
+Smart_wms/Ai_engine/.env
+Smart_wms/Ai_engine/venv/
+Smart_wms/Ai_engine/env/
+Smart_wms/Ai_engine/*.pyc
+Smart_wms/Ai_engine/models/*.pkl
+Smart_wms/Ai_engine/models/*.h5
+Smart_wms/Ai_engine/.pytest_cache/
+Smart_wms/Ai_engine/.mypy_cache/
+
+# Database
+Smart_wms/Database/.env
+Smart_wms/Database/*.db
+Smart_wms/Database/migrations/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Environment files
 .env
-venv/
-node_modules/
+.env.local
+.env.*.local
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+coverage/

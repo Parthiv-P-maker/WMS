@@ -1,0 +1,104 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart-wms-db
+    environment:
+      POSTGRES_DB: smart_wms
+      POSTGRES_USER: wms_user
+      POSTGRES_PASSWORD: secure_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./Database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wms_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: smart-wms-cache
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: smart-wms-backend
+    environment:
+      DATABASE_URL: postgresql://wms_user:secure_password_123@postgres:5432/smart_wms
+      REDIS_URL: redis://redis:6379
+      AI_ENGINE_URL: http://ai-engine:8001
+      JWT_SECRET: your-super-secret-key-change-in-production
+      NODE_ENV: development
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./Backend/src:/app/src
+    command: npm run dev
+
+  # AI Engine
+  ai-engine:
+    build:
+      context: ./Ai_engine
+      dockerfile: Dockerfile
+    container_name: smart-wms-ai
+    environment:
+      DATABASE_URL: postgresql://wms_user:secure_password_123@postgres:5432/smart_wms
+      REDIS_URL: redis://redis:6379
+      MODEL_PATH: /app/models
+      LOG_LEVEL: INFO
+      WORKERS: 4
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./Ai_engine/models:/app/models
+      - ./Ai_engine/src:/app/src
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+
+  # Frontend (Optional - usually serve separately during dev)
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: smart-wms-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:5000/api/v1
+      REACT_APP_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./Frontend/src:/app/src
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: smart-wms-network
